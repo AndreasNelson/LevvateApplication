@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFormSubmit } from '../hooks/useFormSubmit.js';
 import { useOnboarding } from '../hooks/useOnboarding.js';
+import { TextInput, Button, Title, Text, Stack, Card, Alert } from '@mantine/core';
 
 interface Step1Data {
   name: string;
@@ -16,11 +17,6 @@ export const Step1_ClientInfo: React.FC<{ onNext: () => void }> = ({ onNext }) =
     (stepData[1] as Step1Data) || { name: '', email: '', company: '', phone: '' }
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email) {
@@ -31,61 +27,48 @@ export const Step1_ClientInfo: React.FC<{ onNext: () => void }> = ({ onNext }) =
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-6">Client Information</h2>
+    <Card shadow="none" padding="0">
+      <Title order={2} mb="xs">Client Information</Title>
+      <Text c="dimmed" mb="xl">Please provide your basic contact details to get started.</Text>
+
       <form onSubmit={onSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Name *</label>
-          <input
-            type="text"
-            name="name"
+        <Stack gap="md">
+          <TextInput
+            label="Full Name"
+            placeholder="John Doe"
+            required
             value={formData.name}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Email *</label>
-          <input
+          <TextInput
+            label="Email Address"
+            placeholder="john@example.com"
             type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Company</label>
-          <input
-            type="text"
-            name="company"
+          <TextInput
+            label="Company Name"
+            placeholder="Acme Inc."
             value={formData.company}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
           />
-        </div>
-        <div className="mb-6">
-          <label className="block text-gray-700 font-bold mb-2">Phone</label>
-          <input
-            type="tel"
-            name="phone"
+          <TextInput
+            label="Phone Number"
+            placeholder="+1 (555) 000-0000"
             value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           />
-        </div>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          {submitting ? 'Saving...' : 'Next'}
-        </button>
+          
+          {error && <Alert color="red" mt="md">{error}</Alert>}
+          
+          <Button type="submit" loading={submitting} size="md" mt="xl" fullWidth>
+            Next: Review Contract
+          </Button>
+        </Stack>
       </form>
-    </div>
+    </Card>
   );
 };
 

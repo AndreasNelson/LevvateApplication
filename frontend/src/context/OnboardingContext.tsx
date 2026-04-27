@@ -13,6 +13,7 @@ interface OnboardingContextType {
   initializeClient: (uuid: string) => Promise<void>;
   submitStep: (step: number, formData: StepFormData) => Promise<void>;
   setClientUuid: (uuid: string) => void;
+  setCurrentStep: (step: number) => void;
 }
 
 export const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
@@ -92,7 +93,8 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         error,
         initializeClient,
         submitStep,
-        setClientUuid
+        setClientUuid,
+        setCurrentStep
       }}
     >
       {children}

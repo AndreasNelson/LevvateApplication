@@ -1,53 +1,66 @@
 import React from 'react';
 import { useOnboarding } from '../hooks/useOnboarding.js';
+import { Title, Text, Stack, Card, Alert, List, ThemeIcon, Code, Paper, Group, Divider, Box } from '@mantine/core';
+import { IconCheck } from '@tabler/icons-react';
 
 export const Step5_Confirmation: React.FC = () => {
   const { stepData, clientUuid } = useOnboarding();
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow">
-      <div className="text-center mb-8">
-        <div className="text-6xl mb-4">✓</div>
-        <h2 className="text-3xl font-bold text-green-600 mb-2">Onboarding Complete!</h2>
-        <p className="text-gray-600">Thank you for completing your onboarding with Levvate.</p>
-      </div>
+    <Card shadow="none" padding="0">
+      <Stack align="center" gap="xs" mb={40}>
+        <ThemeIcon size={80} radius={80} color="green" variant="light">
+          <IconCheck size={40} />
+        </ThemeIcon>
+        <Title order={1} c="green.8">Onboarding Complete!</Title>
+        <Text c="dimmed" size="lg">Thank you for completing your onboarding with Levvate.</Text>
+      </Stack>
 
-      <div className="bg-gray-50 p-6 rounded-lg mb-6">
-        <h3 className="font-bold text-lg mb-4">Submitted Information</h3>
-        <div className="space-y-3">
-          {Object.entries(stepData).map(([step, data]) => (
-            <div key={step} className="border-b pb-2">
-              <p className="text-sm text-gray-600">Step {step}</p>
-              <pre className="text-xs overflow-x-auto">
-                {JSON.stringify(data, null, 2)}
-              </pre>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Divider mb="xl" label="Summary of Submitted Information" labelPosition="center" />
 
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <p className="text-sm text-gray-700">
-          <strong>Your tracking ID:</strong> {clientUuid}
-        </p>
-        <p className="text-xs text-gray-600 mt-2">
-          Use this ID to return to your onboarding anytime: 
-          {' '}{window.location.origin}/onboarding/{clientUuid}
-        </p>
-      </div>
+      <Stack gap="xl">
+        <Paper withBorder p="md" bg="gray.0">
+          <Title order={4} mb="md">Submission Details</Title>
+          <Stack gap="sm">
+            {Object.entries(stepData).map(([step, data]) => (
+              <Box key={step}>
+                <Text size="xs" fw={700} c="dimmed" tt="uppercase">Step {step}</Text>
+                <Code block color="blue.0" c="blue.9">
+                  {JSON.stringify(data, null, 2)}
+                </Code>
+              </Box>
+            ))}
+          </Stack>
+        </Paper>
 
-      <div className="mt-8 p-4 bg-green-50 rounded-lg border border-green-200">
-        <p className="text-green-800">
-          ✓ Client information submitted to HubSpot CRM
-        </p>
-        <p className="text-green-800">
-          ✓ Team has been notified of your onboarding
-        </p>
-        <p className="text-green-800">
-          ✓ Confirmation email sent
-        </p>
-      </div>
-    </div>
+        <Alert color="blue" title="Save your tracking link" radius="md">
+          <Text size="sm" mb="xs">
+            Use your Tracking ID to return to your onboarding at any time:
+          </Text>
+          <Code block color="white" style={{ border: '1px solid #d0ebff' }}>
+            {window.location.origin}/onboarding/{clientUuid}
+          </Code>
+        </Alert>
+
+        <Paper withBorder p="lg" radius="md" bg="green.0">
+          <Title order={4} c="green.9" mb="md">Automated Actions Triggered</Title>
+          <List
+            spacing="sm"
+            size="sm"
+            center
+            icon={
+              <ThemeIcon color="green" size={24} radius="xl">
+                <IconCheck size={16} />
+              </ThemeIcon>
+            }
+          >
+            <List.Item>Client information synced to HubSpot CRM (Mocked)</List.Item>
+            <List.Item>Internal team notified of completion via Slack (Mocked)</List.Item>
+            <List.Item>Personalized confirmation email sent to your inbox (Mocked)</List.Item>
+          </List>
+        </Paper>
+      </Stack>
+    </Card>
   );
 };
 

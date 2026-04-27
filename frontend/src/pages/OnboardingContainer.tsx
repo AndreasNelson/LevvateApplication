@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboarding } from '../hooks/useOnboarding.js';
 import { ProgressBar } from '../components/ProgressBar.js';
 import { Step1_ClientInfo } from '../components/Step1_ClientInfo.js';
@@ -8,11 +9,21 @@ import { Step3_Payment } from '../components/Step3_Payment.js';
 import { Step4_Scheduling } from '../components/Step4_Scheduling.js';
 import { Step5_Confirmation } from '../components/Step5_Confirmation.js';
 import apiClient from '../services/apiClient.js';
+import { Loader, Center, Box, Title, Text, Button } from '@mantine/core';
 
 export const OnboardingContainer: React.FC = () => {
   const { uuid } = useParams<{ uuid?: string }>();
   const navigate = useNavigate();
-  const { clientUuid, currentStep, stepsCompleted, isComplete, setClientUuid, loading, error } = useOnboarding();
+  const { 
+    clientUuid, 
+    currentStep, 
+    stepsCompleted, 
+    isComplete, 
+    setClientUuid, 
+    setCurrentStep,
+    loading, 
+    error 
+  } = useOnboarding();
   const [formError, setFormError] = useState<string | null>(null);
 
   // Initialize client from URL if UUID provided
@@ -44,41 +55,25 @@ export const OnboardingContainer: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white p-12 rounded-lg shadow-lg text-center max-w-md mx-auto">
-        <div className="flex justify-center mb-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-        <h2 className="text-xl font-semibold mb-2">Preparing your onboarding...</h2>
-        <p className="text-gray-600">Our demo server may take a few seconds to wake up. Thank you for your patience!</p>
-        <div className="mt-8 space-y-4">
-          <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
-          <div className="h-4 bg-gray-100 rounded animate-pulse w-5/6 mx-auto"></div>
-          <div className="h-4 bg-gray-100 rounded animate-pulse w-4/6 mx-auto"></div>
-        </div>
-      </div>
+      <Center py={50}>
+        <Box style={{ textAlign: 'center' }}>
+          <Loader size="xl" mb="md" />
+          <Title order={3} mb="xs">Preparing your onboarding...</Title>
+          <Text c="dimmed">Our demo server may take a few seconds to wake up. Thank you for your patience!</Text>
+        </Box>
+      </Center>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 p-8 rounded-lg shadow border border-red-200">
-        <p className="text-red-800">{error}</p>
-        <button
-          onClick={startNewOnboarding}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
+      <Box p="xl" style={{ textAlign: 'center' }}>
+        <Title order={3} c="red" mb="md">Error</Title>
+        <Text mb="xl">{error}</Text>
+        <Button onClick={startNewOnboarding} color="blue">
           Start New Onboarding
-        </button>
-      </div>
-    );
-  }
-
-  if (isComplete || currentStep > 5) {
-    return (
-      <div>
-        <ProgressBar currentStep={5} totalSteps={5} stepsCompleted={stepsCompleted} />
-        <Step5_Confirmation />
-      </div>
+        </Button>
+      </Box>
     );
   }
 
@@ -86,20 +81,45 @@ export const OnboardingContainer: React.FC = () => {
     // Component will update automatically via context
   };
 
+  const handleStepClick = (step: number) => {
+    setCurrentStep(step);
+  };
+
   return (
     <div>
-      <ProgressBar currentStep={currentStep} totalSteps={5} stepsCompleted={stepsCompleted} />
+      <ProgressBar 
+        currentStep={currentStep} 
+        totalSteps={5} 
+        stepsCompleted={stepsCompleted} 
+        onStepClick={handleStepClick}
+      />
       
       {formError && (
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
-          <p className="text-red-800">{formError}</p>
-        </div>
+        <Alert color="red" title="Error" mb="xl">
+          {formError}
+        </Alert>
       )}
 
-      {currentStep === 1 && <Step1_ClientInfo onNext={handleNextStep} />}
-      {currentStep === 2 && <Step2_Contract onNext={handleNextStep} />}
-      {currentStep === 3 && <Step3_Payment onNext={handleNextStep} />}
-      {currentStep === 4 && <Step4_Scheduling onNext={handleNextStep} />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {isComplete || currentStep > 5 ? (
+            <Step5_Confirmation />
+          ) : (
+            <>
+              {currentStep === 1 && <Step1_ClientInfo onNext={handleNextStep} />}
+              {currentStep === 2 && <Step2_Contract onNext={handleNextStep} />}
+              {currentStep === 3 && <Step3_Payment onNext={handleNextStep} />}
+              {currentStep === 4 && <Step4_Scheduling onNext={handleNextStep} />}
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

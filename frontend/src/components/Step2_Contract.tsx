@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFormSubmit } from '../hooks/useFormSubmit.js';
 import { useOnboarding } from '../hooks/useOnboarding.js';
+import { Button, Title, Text, Stack, Card, Alert, Checkbox, ScrollArea, Paper } from '@mantine/core';
 
 interface Step2Data {
   agreedToTerms: boolean;
@@ -23,37 +24,55 @@ export const Step2_Contract: React.FC<{ onNext: () => void }> = ({ onNext }) => 
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-6">Service Agreement</h2>
-      <div className="bg-gray-50 p-6 rounded-lg mb-6 max-h-64 overflow-y-auto">
-        <h3 className="font-bold mb-2">Service Agreement Terms</h3>
-        <p className="text-sm text-gray-700">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. By agreeing to these terms,
-          you acknowledge that you have read, understood, and agree to be bound by this agreement.
-        </p>
-      </div>
+    <Card shadow="none" padding="0">
+      <Title order={2} mb="xs">Service Agreement</Title>
+      <Text c="dimmed" mb="xl">Please review and accept our standard service terms.</Text>
+
+      <Paper withBorder p="md" mb="xl" bg="gray.0">
+        <ScrollArea h={200} offsetScrollbars>
+          <Title order={4} mb="sm">Agreement Terms</Title>
+          <Text size="sm" mb="md">
+            <b>1. Services:</b> We agree to provide the services described in your proposal with professional care and skill.
+          </Text>
+          <Text size="sm" mb="md">
+            <b>2. Payment:</b> Professional fees are as outlined in the proposal. Retainers are due prior to project commencement.
+          </Text>
+          <Text size="sm" mb="md">
+            <b>3. Confidentiality:</b> Both parties agree to maintain the confidentiality of all proprietary information shared during the course of the project.
+          </Text>
+          <Text size="sm" mb="md">
+            <b>4. Intellectual Property:</b> Upon final payment, the rights to the deliverables will transfer to the client, while we retain rights to our underlying methodologies.
+          </Text>
+          <Text size="sm">
+            <b>5. Termination:</b> Either party may terminate this agreement with 30 days written notice. Fees for work completed up to that point will remain due.
+          </Text>
+        </ScrollArea>
+      </Paper>
+
       <form onSubmit={onSubmit}>
-        <div className="mb-6">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.agreedToTerms}
-              onChange={(e) => setFormData({ agreedToTerms: e.target.checked })}
-              className="mr-3"
-            />
-            <span className="text-gray-700">I agree to the Service Agreement *</span>
-          </label>
-        </div>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-        <button
-          type="submit"
-          disabled={submitting || !formData.agreedToTerms}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          {submitting ? 'Saving...' : 'Next'}
-        </button>
+        <Stack gap="md">
+          <Checkbox
+            label="I have read and agree to the Service Agreement"
+            checked={formData.agreedToTerms}
+            onChange={(e) => setFormData({ agreedToTerms: e.currentTarget.checked })}
+            required
+          />
+          
+          {error && <Alert color="red" mt="md">{error}</Alert>}
+          
+          <Button 
+            type="submit" 
+            loading={submitting} 
+            disabled={!formData.agreedToTerms}
+            size="md" 
+            mt="xl" 
+            fullWidth
+          >
+            Next: Payment Method
+          </Button>
+        </Stack>
       </form>
-    </div>
+    </Card>
   );
 };
 

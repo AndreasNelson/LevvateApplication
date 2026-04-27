@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFormSubmit } from '../hooks/useFormSubmit.js';
 import { useOnboarding } from '../hooks/useOnboarding.js';
+import { Button, Title, Text, Stack, Card, Alert, TextInput, Group } from '@mantine/core';
 
 interface Step3Data {
   cardNumber: string;
@@ -15,11 +16,6 @@ export const Step3_Payment: React.FC<{ onNext: () => void }> = ({ onNext }) => {
     (stepData[3] as Step3Data) || { cardNumber: '', expiryDate: '', cvc: '' }
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await handleSubmit(formData);
@@ -27,57 +23,49 @@ export const Step3_Payment: React.FC<{ onNext: () => void }> = ({ onNext }) => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
+    <Card shadow="none" padding="0">
+      <Title order={2} mb="xs">Payment Method</Title>
+      <Text c="dimmed" mb="xl">Securely set up your payment details for the project retainer.</Text>
+
+      <Alert variant="outline" color="orange" title="Reminder" mb="xl">
+        Use <b>4242</b> test card numbers. No actual charges will be made.
+      </Alert>
+
       <form onSubmit={onSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Card Number *</label>
-          <input
-            type="text"
-            name="cardNumber"
+        <Stack gap="md">
+          <TextInput
+            label="Card Number"
             placeholder="4242 4242 4242 4242"
-            value={formData.cardNumber}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
+            value={formData.cardNumber}
+            onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-gray-700 font-bold mb-2">Expiry Date *</label>
-            <input
-              type="text"
-              name="expiryDate"
+          
+          <Group grow>
+            <TextInput
+              label="Expiry Date"
               placeholder="MM/YY"
+              required
               value={formData.expiryDate}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+              onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
             />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-bold mb-2">CVC *</label>
-            <input
-              type="text"
-              name="cvc"
+            <TextInput
+              label="CVC"
               placeholder="123"
-              value={formData.cvc}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              value={formData.cvc}
+              onChange={(e) => setFormData({ ...formData, cvc: e.target.value })}
             />
-          </div>
-        </div>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          {submitting ? 'Processing...' : 'Next'}
-        </button>
+          </Group>
+          
+          {error && <Alert color="red" mt="md">{error}</Alert>}
+          
+          <Button type="submit" loading={submitting} size="md" mt="xl" fullWidth>
+            Next: Scheduling
+          </Button>
+        </Stack>
       </form>
-    </div>
+    </Card>
   );
 };
 
