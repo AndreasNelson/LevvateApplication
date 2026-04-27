@@ -9,8 +9,10 @@ interface OnboardingContextType {
   isComplete: boolean;
   stepData: Record<number, StepFormData>;
   isInitializing: boolean;
+  isGeneratingId: boolean;
   error: string | null;
   initializeClient: (uuid: string) => Promise<void>;
+  createInitialClient: () => Promise<string>;
   submitStep: (step: number, formData: StepFormData) => Promise<void>;
   setClientUuid: (uuid: string) => void;
   setCurrentStep: (step: number) => void;
@@ -29,22 +31,25 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   const [isComplete, setIsComplete] = useState(false);
   const [stepData, setStepData] = useState<Record<number, StepFormData>>({});
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isGeneratingId, setIsGeneratingId] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isNewSession, setIsNewSession] = useState(false);
 
   // Load progress from localStorage on mount
   useEffect(() => {
     const savedUuid = localStorage.getItem('clientUuid');
-    if (savedUuid) {
-      setClientUuid(savedUuid);
+    if (savedUuid && !window.location.pathname.includes(savedUuid)) {
+        // If we have a saved UUID but it's not in the URL, we might want to use it
+        // but for this demo, we'll let the container handle the redirect.
     }
   }, []);
 
-  // Load client data when UUID changes
+  // Load client data when UUID changes, but skip if we just created it
   useEffect(() => {
-    if (clientUuid) {
+    if (clientUuid && !isNewSession) {
       initializeClient(clientUuid);
     }
-  }, [clientUuid]);
+  }, [clientUuid, isNewSession]);
 
   const initializeClient = useCallback(async (uuid: string) => {
     setIsInitializing(true);
@@ -59,6 +64,26 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       setError(err.response?.data?.error || 'Failed to load onboarding data');
     } finally {
       setIsInitializing(false);
+    }
+  }, []);
+
+  const createInitialClient = useCallback(async () => {
+    setIsGeneratingId(true);
+    setError(null);
+    try {
+      const response = await apiClient.createClient('temp@example.com');
+      setIsNewSession(true);
+      setClientUuid(response.uuid);
+      setCurrentStep(response.progress.currentStep);
+      setStepsCompleted(response.progress.stepsCompleted);
+      setStepData({});
+      localStorage.setItem('clientUuid', response.uuid);
+      return response.uuid;
+    } catch (err: any) {
+      setError('Failed to start onboarding');
+      throw err;
+    } finally {
+      setIsGeneratingId(false);
     }
   }, []);
 
@@ -87,8 +112,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         isComplete,
         stepData,
         isInitializing,
+        isGeneratingId,
         error,
         initializeClient,
+        createInitialClient,
         submitStep,
         setClientUuid,
         setCurrentStep

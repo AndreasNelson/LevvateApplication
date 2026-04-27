@@ -9,7 +9,7 @@ import { Step3_Payment } from '../components/Step3_Payment.js';
 import { Step4_Scheduling } from '../components/Step4_Scheduling.js';
 import { Step5_Confirmation } from '../components/Step5_Confirmation.js';
 import { apiClient } from '../services/apiClient.js';
-import { Loader, Center, Box, Title, Text, Button, Alert } from '@mantine/core';
+import { Loader, Center, Box, Title, Text, Button, Alert, LoadingOverlay } from '@mantine/core';
 
 export const OnboardingContainer: React.FC = () => {
   const { uuid } = useParams<{ uuid?: string }>();
@@ -21,7 +21,9 @@ export const OnboardingContainer: React.FC = () => {
     isComplete, 
     setClientUuid, 
     setCurrentStep,
-    isInitializing, 
+    isInitializing,
+    isGeneratingId,
+    createInitialClient,
     error 
   } = useOnboarding();
   const [formError, setFormError] = useState<string | null>(null);
@@ -36,18 +38,16 @@ export const OnboardingContainer: React.FC = () => {
 
   // Redirect to new onboarding if no UUID
   useEffect(() => {
-    if (!uuid && !clientUuid && !isInitializing) {
+    if (!uuid && !clientUuid && !isInitializing && !isGeneratingId) {
       startNewOnboarding();
     }
-  }, [uuid, clientUuid, isInitializing]);
+  }, [uuid, clientUuid, isInitializing, isGeneratingId]);
 
   const startNewOnboarding = async () => {
     try {
       setFormError(null);
-      const response = await apiClient.createClient('temp@example.com');
-      setClientUuid(response.uuid);
-      localStorage.setItem('clientUuid', response.uuid);
-      navigate(`/onboarding/${response.uuid}`, { replace: true });
+      const newUuid = await createInitialClient();
+      navigate(`/onboarding/${newUuid}`, { replace: true });
     } catch (err: any) {
       setFormError('Failed to start onboarding');
     }
@@ -65,7 +65,7 @@ export const OnboardingContainer: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error && !isGeneratingId) {
     return (
       <Box p="xl" style={{ textAlign: 'center' }}>
         <Title order={3} c="red" mb="md">Error</Title>
@@ -86,7 +86,21 @@ export const OnboardingContainer: React.FC = () => {
   };
 
   return (
-    <div>
+    <Box pos="relative">
+      <LoadingOverlay 
+        visible={isGeneratingId} 
+        zIndex={1000} 
+        overlayProps={{ radius: "sm", blur: 2 }}
+        loaderProps={{ size: 'md', variant: 'bars' }}
+      />
+      
+      {isGeneratingId && (
+          <Box pos="absolute" style={{ top: '60%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1001, textAlign: 'center' }}>
+              <Text fw={500} size="lg">Generating your session...</Text>
+              <Text size="xs" c="dimmed">This won't take long.</Text>
+          </Box>
+      )}
+
       <ProgressBar 
         currentStep={currentStep} 
         totalSteps={5} 
@@ -120,7 +134,7 @@ export const OnboardingContainer: React.FC = () => {
           )}
         </motion.div>
       </AnimatePresence>
-    </div>
+    </Box>
   );
 };
 
