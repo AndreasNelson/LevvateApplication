@@ -15,7 +15,7 @@ app.use(express.json());
 // CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? [/\.onrender\.com$/, /localhost:3000/] // Allow Render domains and local dev
+    ? [/\.onrender\.com$/, /\.vercel\.app$/, /localhost:3000/] // Allow Render, Vercel, and local dev
     : true, // Allow all in dev
   optionsSuccessStatus: 200
 };
