@@ -1,7 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 import { OnboardingProgress, StepFormData } from '../types/index.js';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = process.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 
 export let axiosInstance: AxiosInstance = axios.create({
     baseURL: API_URL,

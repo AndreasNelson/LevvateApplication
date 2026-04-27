@@ -5,7 +5,7 @@ import clientRoutes from './routes/clients.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const PORT = process.env.BACKEND_PORT || 5000;
+const PORT = process.env.PORT || process.env.BACKEND_PORT || 5000;
 
 // Middleware
 app.use(express.json());
