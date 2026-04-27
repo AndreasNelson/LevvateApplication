@@ -8,7 +8,7 @@ interface OnboardingContextType {
   stepsCompleted: number[];
   isComplete: boolean;
   stepData: Record<number, StepFormData>;
-  loading: boolean;
+  isInitializing: boolean;
   error: string | null;
   initializeClient: (uuid: string) => Promise<void>;
   submitStep: (step: number, formData: StepFormData) => Promise<void>;
@@ -28,7 +28,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   const [stepsCompleted, setStepsCompleted] = useState<number[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [stepData, setStepData] = useState<Record<number, StepFormData>>({});
-  const [loading, setLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load progress from localStorage on mount
@@ -47,7 +47,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
   }, [clientUuid]);
 
   const initializeClient = useCallback(async (uuid: string) => {
-    setLoading(true);
+    setIsInitializing(true);
     setError(null);
     try {
       const data = await apiClient.getClient(uuid);
@@ -58,14 +58,13 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load onboarding data');
     } finally {
-      setLoading(false);
+      setIsInitializing(false);
     }
   }, []);
 
   const submitStep = useCallback(async (step: number, formData: StepFormData) => {
     if (!clientUuid) throw new Error('No client UUID');
 
-    setLoading(true);
     setError(null);
     try {
       const response = await apiClient.submitStep(clientUuid, step, formData);
@@ -76,8 +75,6 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to submit step');
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, [clientUuid]);
 
@@ -89,7 +86,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         stepsCompleted,
         isComplete,
         stepData,
-        loading,
+        isInitializing,
         error,
         initializeClient,
         submitStep,

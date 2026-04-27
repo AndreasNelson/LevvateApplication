@@ -21,7 +21,7 @@ export const OnboardingContainer: React.FC = () => {
     isComplete, 
     setClientUuid, 
     setCurrentStep,
-    loading, 
+    isInitializing, 
     error 
   } = useOnboarding();
   const [formError, setFormError] = useState<string | null>(null);
@@ -36,10 +36,10 @@ export const OnboardingContainer: React.FC = () => {
 
   // Redirect to new onboarding if no UUID
   useEffect(() => {
-    if (!uuid && !clientUuid && !loading) {
+    if (!uuid && !clientUuid && !isInitializing) {
       startNewOnboarding();
     }
-  }, [uuid, clientUuid, loading]);
+  }, [uuid, clientUuid, isInitializing]);
 
   const startNewOnboarding = async () => {
     try {
@@ -53,7 +53,7 @@ export const OnboardingContainer: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (isInitializing) {
     return (
       <Center py={50}>
         <Box style={{ textAlign: 'center' }}>
