@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { initializeDatabase } from './config/database.js';
 import clientRoutes from './routes/clients.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -7,9 +8,18 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 const app = express();
 const PORT = process.env.PORT || process.env.BACKEND_PORT || 5000;
 
-// Middleware
+// Security Middleware
+app.use(helmet());
 app.use(express.json());
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [/\.onrender\.com$/, /localhost:3000/] // Allow Render domains and local dev
+    : true, // Allow all in dev
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Initialize database
 initializeDatabase();

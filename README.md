@@ -1,55 +1,63 @@
-# LevvateApplication
 # Levvate Client Onboarding Application
 
-A multi-step client onboarding web application built with React, TypeScript, and Node.js/Express.
+A professional, production-ready multi-step client onboarding technical demonstration built with a modern full-stack TypeScript architecture.
 
-## Features
+## Overview
 
-- ✅ 5-step onboarding form (Client Info → Contract → Payment → Scheduling → Confirmation)
-- ✅ Unique UUID-based tracking URLs for clients to resume anytime
-- ✅ Real-time progress tracking with persistent localStorage and database storage
-- ✅ Auto-triggers on completion:
-  - Syncs client data to HubSpot CRM (mocked)
-  - Stores all form data in SQLite
-  - Notifies team via email/Slack (mocked)
-  - Sends confirmation email to client (mocked)
-- ✅ 100% test coverage with Jest
-- ✅ TypeScript for type safety across full stack
-- ✅ All external services mocked (no API keys needed)
+This application demonstrates a seamless onboarding flow for new clients, featuring a polished UI, persistent state management, and an asynchronous backend capable of cloud scale. It follows industry best practices for security, testing, and developer experience.
+
+## Key Features
+
+- ✅ **Professional UI/UX**: Built with **Mantine v7** and **Framer Motion** for a snappy, responsive, and animated user experience.
+- ✅ **Interactive Progress Tracking**: A real-time **Stepper** allows users to visualize their progress and jump back to previous steps to update information.
+- ✅ **Resume Anywhere**: Unique UUID-based tracking URLs allow clients to leave and resume their onboarding at any time.
+- ✅ **Production-Ready Backend**: Fully asynchronous architecture using **Node.js/Express** and **LibSQL (Turso/SQLite)**.
+- ✅ **Enterprise Security**:
+  - **Data Masking**: Sensitive card numbers are automatically redacted before database storage.
+  - **Security Headers**: Hardened with **Helmet.js** to prevent common web vulnerabilities.
+  - **CORS Management**: Restricted origins for production environments.
+- ✅ **High-Quality Codebase**:
+  - **100% Line Coverage** on both frontend and backend.
+  - Comprehensive unit and integration test suites using **Jest**.
+  - Type safety enforced across the entire stack.
 
 ## Tech Stack
 
 **Frontend:**
-- React 18 + TypeScript
-- Vite (build tool)
-- React Router DOM (navigation)
-- Axios (HTTP client)
-- TailwindCSS (styling)
+- **React 18 + TypeScript**
+- **Mantine v7** (Component Library)
+- **Framer Motion** (Animations)
+- **React Router 6** (Navigation with v7 Future Flags enabled)
+- **Axios** (API Communication)
 
 **Backend:**
-- Express.js 4 + TypeScript
-- SQLite with better-sqlite3
-- Jest (testing)
-- UUID (unique tracking)
+- **Node.js + Express**
+- **LibSQL / Turso** (Cloud-ready SQLite)
+- **Helmet.js** (Security)
+- **Jest / Supertest** (Testing)
 
 **Database:**
-- SQLite (file-based, zero setup)
-- Tables: clients, onboarding_progress, step_data, notifications
+- **SQLite/LibSQL**: Hybrid local-file and cloud-hosted support.
+- Tables: `clients`, `onboarding_progress`, `step_data`, `notifications`.
 
-## Installation
+## Installation & Setup
 
 ### Prerequisites
 - Node.js 18+ and npm
 
-### Setup
+### Local Installation
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd LevvateApplication
+
 # Install backend dependencies
 cd backend
 npm install
 
 # Install frontend dependencies
-cd frontend
+cd ../frontend
 npm install
 ```
 
@@ -62,7 +70,6 @@ npm install
 cd backend
 npm run dev
 ```
-
 Backend runs on `http://localhost:5000`
 
 **Terminal 2 - Frontend:**
@@ -70,187 +77,68 @@ Backend runs on `http://localhost:5000`
 cd frontend
 npm run dev
 ```
+Frontend runs on `http://localhost:3000`
 
-Frontend runs on `http://localhost:3000` and opens automatically
+## Testing & Coverage
 
-### Production Build
-
-**Backend:**
-```bash
-cd backend
-npm run build
-npm start
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm run build
-npm run preview
-```
-
-## Testing
+The project maintains extremely high testing standards to ensure reliability during demonstrations.
 
 ### Run all tests
 ```bash
-# Backend tests
+# Backend
 cd backend
-npm test
+npm test -- --runInBand
 
-# Frontend tests
+# Frontend
 cd frontend
-npm test
+npm test -- --runInBand
 ```
 
-### Generate coverage reports
+### Coverage Reports
 ```bash
-# Backend coverage
+# Backend
 cd backend
 npm run test:coverage
 
-# Frontend coverage
+# Frontend
 cd frontend
 npm run test:coverage
 ```
 
 ## API Documentation
 
-### Endpoints
+### Key Endpoints
 
-#### POST `/api/clients`
-Create a new client and start onboarding.
+- `POST /api/clients`: Initialize a new onboarding session.
+- `GET /api/clients/:uuid`: Retrieve all session data and progress.
+- `POST /api/clients/:uuid/step/:step`: Submit data for a specific onboarding step.
+- `GET /api/clients/:uuid/progress`: Fast-fetch only the current step and completion status.
 
-**Request:**
-```json
-{
-  "email": "client@example.com",
-  "name": "John Doe",
-  "company": "Acme Corp",
-  "phone": "555-1234"
-}
-```
+## Onboarding Flow
 
-**Response:**
-```json
-{
-  "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "progress": {
-    "currentStep": 1,
-    "stepsCompleted": []
-  }
-}
-```
+1. **Client Info**: Basic contact and company details.
+2. **Contract**: Review and accept a (non-binding) service agreement.
+3. **Payment**: Secure payment method setup (Redacted storage).
+4. **Scheduling**: Pick a date and time for the kick-off call.
+5. **Review & Confirmation**: Full summary of all submitted data before completion.
 
-#### GET `/api/clients/:uuid`
-Get full client data and progress.
+## Cloud Deployment
 
-**Response:**
-```json
-{
-  "client": {...},
-  "progress": {
-    "currentStep": 1,
-    "stepsCompleted": [],
-    "isComplete": false
-  },
-  "stepData": {}
-}
-```
+This repository is optimized for deployment on **Render**, **Railway**, or **Vercel**.
 
-#### POST `/api/clients/:uuid/step/:step`
-Submit form data for a specific step.
+### Render (Blueprint)
+The included `render.yaml` allows for "one-click" deployment of both the frontend and backend services.
 
-**Request:**
-```json
-{
-  "formData": { ... }
-}
-```
+### Database (Turso)
+To use a persistent cloud database:
+1. Create a database in [Turso](https://turso.tech/).
+2. Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in your backend environment variables.
 
-**Response:**
-```json
-{
-  "progress": {
-    "currentStep": 2,
-    "stepsCompleted": [1],
-    "isComplete": false
-  }
-}
-```
-
-#### GET `/api/clients/:uuid/progress`
-Get only progress information.
-
-## Onboarding Steps
-
-1. **Client Info** - Collect name, email, company, phone
-2. **Contract** - Display and accept service agreement
-3. **Payment** - Mock Stripe payment (test card: 4242 4242 4242 4242)
-4. **Scheduling** - Pick meeting date/time
-5. **Confirmation** - Review and submit (triggers backend actions)
-
-## Mock Services
-
-All external integrations are mocked and log to console:
-
-- **HubSpot CRM**: Logs client sync event on completion
-- **Stripe Payment**: Creates mock payment intent and confirmation
-- **Email Notifications**: Logs email sends to console
-- **Notifications DB**: Stores notification events in SQLite
-
-## Demo Walkthrough
-
-1. Visit `http://localhost:3000`
-2. Fill out all 5 steps
-3. On step 5, you'll see confirmation with tracking ID
-4. Check backend console for mock HubSpot sync and notification logs
-5. Database file stored at `backend/data/onboarding.db`
-
-## Project Structure
-
-```
-LevvateApplication/
-├── backend/
-│   ├── src/
-│   │   ├── config/          # Database configuration
-│   │   ├── models/          # Data models (Client, Progress, etc)
-│   │   ├── services/        # Business logic (HubSpot, Stripe, etc)
-│   │   ├── routes/          # API endpoints
-│   │   ├── middleware/      # Express middleware
-│   │   └── index.ts         # Server entry point
-│   ├── __tests__/           # Test suites
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── pages/           # Page components
-│   │   ├── services/        # API client
-│   │   ├── context/         # React context
-│   │   ├── hooks/           # Custom hooks
-│   │   ├── types/           # TypeScript types
-│   │   ├── App.tsx          # Root component
-│   │   └── main.tsx         # Entry point
-│   ├── __tests__/           # Test suites
-│   └── package.json
-├── .env.example             # Example environment variables
-├── .gitignore
-└── README.md
-```
-
-## Known Limitations (Tech Demo)
-
-- All external APIs are mocked (no real HubSpot/Stripe integration)
-- Payment processing is simulated (not real charges)
-- Email notifications are logged, not actually sent
-- SQLite is file-based (adequate for demo, use PostgreSQL for production)
-
-## Development Notes
-
-- **100% Test Coverage**: All code paths tested with Jest
-- **TDD Approach**: Tests written first, then implementation
-- **Type Safety**: Full TypeScript types across backend and frontend
-- **State Persistence**: Client progress saved in localStorage + SQLite database
+## Security & Privacy Notice (Demo)
+- This is a technical demonstration.
+- **Do not enter real financial or personal data.**
+- Payment inputs are for UI demonstration only; data is masked before being saved.
+- All service integrations (HubSpot, Slack, Email) are currently mocked to log to the console for easier review.
 
 ## License
-
 MIT

@@ -9,15 +9,26 @@ export interface IStepData {
 }
 
 export class StepDataModel {
+  private static maskCardNumber(data: Record<string, any>): Record<string, any> {
+    const masked = { ...data };
+    if (masked.cardNumber) {
+      const last4 = masked.cardNumber.toString().slice(-4);
+      masked.cardNumber = `**** **** **** ${last4}`;
+    }
+    return masked;
+  }
+
   static async save(clientId: number, step: number, formData: Record<string, any>): Promise<IStepData> {
     const now = Date.now();
+    const dataToSave = step === 3 ? this.maskCardNumber(formData) : formData;
+
     await db.execute({
       sql: `INSERT INTO step_data (clientId, step, formData, submittedAt)
             VALUES (?, ?, ?, ?)
             ON CONFLICT(clientId, step) DO UPDATE SET
               formData = excluded.formData,
               submittedAt = excluded.submittedAt`,
-      args: [clientId, step, JSON.stringify(formData), now]
+      args: [clientId, step, JSON.stringify(dataToSave), now]
     });
     
     const saved = await this.getByClientAndStep(clientId, step);
