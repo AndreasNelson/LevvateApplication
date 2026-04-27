@@ -24,17 +24,23 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, totalStep
       <Stepper 
         active={currentStep - 1} 
         onStepClick={handleStepClick}
-        allowStepSelect={true}
         size="sm"
       >
-        {stepLabels.map((label, idx) => (
-          <Stepper.Step 
-            key={idx} 
-            label={label} 
-            description={idx + 1 === currentStep ? 'In Progress' : (stepsCompleted.includes(idx + 1) ? 'Completed' : 'Upcoming')}
-            disabled={!stepsCompleted.includes(idx + 1) && idx + 1 !== currentStep && idx + 1 > Math.max(...stepsCompleted, 0) + 1}
-          />
-        ))}
+        {stepLabels.map((label, idx) => {
+          const stepNumber = idx + 1;
+          const isCompleted = stepsCompleted.includes(stepNumber);
+          const isCurrent = stepNumber === currentStep;
+          const isSelectable = isCompleted || stepNumber <= Math.max(...stepsCompleted, 0) + 1;
+
+          return (
+            <Stepper.Step 
+              key={idx} 
+              label={label} 
+              description={isCurrent ? 'In Progress' : (isCompleted ? 'Completed' : 'Upcoming')}
+              allowStepSelect={isSelectable}
+            />
+          );
+        })}
       </Stepper>
     </Box>
   );

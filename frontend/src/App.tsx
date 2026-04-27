@@ -6,7 +6,7 @@ import { OnboardingContainer } from './pages/OnboardingContainer.js';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <OnboardingProvider>
         <Layout>
           <Routes>

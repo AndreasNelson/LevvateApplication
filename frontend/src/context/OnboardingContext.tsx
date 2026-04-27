@@ -1,6 +1,6 @@
 import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { OnboardingProgress, StepFormData } from '../types/index.js';
-import apiClient from '../services/apiClient.js';
+import { apiClient } from '../services/apiClient.js';
 
 interface OnboardingContextType {
   clientUuid: string | null;

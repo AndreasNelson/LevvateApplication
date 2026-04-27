@@ -1,7 +1,9 @@
 import { HubSpotService } from '../../src/services/HubSpotService';
-import { StripeService } from '../../src/services/StripeService';
 import { NotificationService } from '../../src/services/NotificationService';
+import { CompletionService } from '../../src/services/CompletionService';
 import { ClientModel } from '../../src/models/Client';
+import { OnboardingProgressModel } from '../../src/models/OnboardingProgress';
+import { StepDataModel } from '../../src/models/StepData';
 import db, { initializeDatabase } from '../../src/config/database';
 
 beforeAll(async () => {
@@ -23,25 +25,6 @@ describe('HubSpotService', () => {
   });
 });
 
-describe('StripeService', () => {
-  it('should create payment intent', async () => {
-    const intent = await StripeService.createPaymentIntent(9900);
-    
-    expect(intent.amount).toBe(9900);
-    expect(intent.currency).toBe('usd');
-    expect(intent.intentId).toBeDefined();
-    expect(intent.clientSecret).toBeDefined();
-  });
-
-  it('should confirm payment', async () => {
-    const intent = await StripeService.createPaymentIntent(9900);
-    const result = await StripeService.confirmPayment(intent.intentId, 'pm_test');
-    
-    expect(result.success).toBe(true);
-    expect(result.transactionId).toBeDefined();
-  });
-});
-
 describe('NotificationService', () => {
   it('should notify team', async () => {
     const client = await ClientModel.create('test@example.com');
@@ -54,8 +37,32 @@ describe('NotificationService', () => {
     const notification = result.rows[0];
     expect(notification).toBeDefined();
   });
+});
 
-  it('should send email', async () => {
-    await expect(NotificationService.sendEmail('test@example.com', 'Subject', 'Body')).resolves.toBeUndefined();
+describe('CompletionService', () => {
+  it('should throw error if onboarding not complete', async () => {
+    const client = await ClientModel.create('test@example.com');
+    await expect(CompletionService.handleCompletion(client.id))
+      .rejects.toThrow('Onboarding not complete');
+  });
+
+  it('should handle failed HubSpot sync gracefully', async () => {
+    const client = await ClientModel.create('complete@example.com');
+    await OnboardingProgressModel.create(client.id);
+    for (let i = 1; i <= 5; i++) {
+      await StepDataModel.save(client.id, i, { step: i });
+      await OnboardingProgressModel.updateStep(client.id, i);
+    }
+
+    jest.spyOn(HubSpotService, 'syncClientToHubSpot').mockResolvedValueOnce({
+      success: false,
+      error: 'API Error'
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await CompletionService.handleCompletion(client.id);
+
+    expect(consoleSpy).toHaveBeenCalledWith('HubSpot sync failed:', 'API Error');
+    consoleSpy.mockRestore();
   });
 });

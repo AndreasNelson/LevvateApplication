@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { AppShell, Header, Container, Alert, Text, Title, Group, Box } from '@mantine/core';
+import { AppShell, Container, Alert, Text, Title, Group, Box } from '@mantine/core';
 
 interface LayoutProps {
   children: ReactNode;

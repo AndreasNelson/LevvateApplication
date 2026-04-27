@@ -35,10 +35,20 @@ describe('ClientModel', () => {
     expect(retrieved?.id).toBe(created.id);
   });
 
+  it('should return null for non-existent client by id', async () => {
+    const result = await ClientModel.getById(999);
+    expect(result).toBeNull();
+  });
+
   it('should update a client', async () => {
     const client = await ClientModel.create('test@example.com', 'Old Co');
     const updated = await ClientModel.update(client.uuid, { company: 'New Co' });
     expect(updated.company).toBe('New Co');
+  });
+
+  it('should throw error when updating non-existent client', async () => {
+    await expect(ClientModel.update('nonexistent', { name: 'New' }))
+      .rejects.toThrow('Client not found');
   });
 
   it('should return null for non-existent client', async () => {
@@ -67,6 +77,11 @@ describe('OnboardingProgressModel', () => {
     const p2 = await OnboardingProgressModel.updateStep(client.id, 2);
     expect(p2.stepsCompleted).toContain(2);
     expect(p2.currentStep).toBe(3);
+  });
+
+  it('should throw error when updating step for non-existent progress', async () => {
+    await expect(OnboardingProgressModel.updateStep(999, 1))
+      .rejects.toThrow('Progress not found');
   });
 
   it('should mark as complete when all 5 steps done', async () => {
@@ -105,6 +120,10 @@ describe('OnboardingProgressModel', () => {
     
     expect(await OnboardingProgressModel.isComplete(client.id)).toBe(true);
   });
+
+  it('should return false for isComplete if progress not found', async () => {
+    expect(await OnboardingProgressModel.isComplete(999)).toBe(false);
+  });
 });
 
 describe('StepDataModel', () => {
@@ -124,6 +143,11 @@ describe('StepDataModel', () => {
     await StepDataModel.save(client.id, 1, formData);
     const retrieved = await StepDataModel.getByClientAndStep(client.id, 1);
     expect(retrieved?.formData).toEqual(formData);
+  });
+
+  it('should return null for non-existent step data', async () => {
+    const retrieved = await StepDataModel.getByClientAndStep(999, 1);
+    expect(retrieved).toBeNull();
   });
 
   it('should update existing step data', async () => {

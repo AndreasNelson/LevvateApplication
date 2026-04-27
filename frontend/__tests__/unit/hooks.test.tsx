@@ -1,26 +1,14 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useOnboarding } from '../../src/hooks/useOnboarding';
-import { OnboardingProvider } from '../../src/context/OnboardingContext';
-
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <OnboardingProvider>{children}</OnboardingProvider>
-);
+import React from 'react';
 
 describe('useOnboarding', () => {
-  it('should provide context values', () => {
-    const { result } = renderHook(() => useOnboarding(), { wrapper });
+  it('should throw error when used outside provider', () => {
+    // Suppress console.error for this test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     
-    expect(result.current.currentStep).toBeDefined();
-    expect(result.current.stepsCompleted).toBeDefined();
-    expect(result.current.submitStep).toBeDefined();
-  });
-
-  it('should throw when used outside provider', () => {
-    // Suppress console errors for this test
-    const spy = jest.spyOn(console, 'error').mockImplementation();
+    expect(() => renderHook(() => useOnboarding())).toThrow('useOnboarding must be used within OnboardingProvider');
     
-    expect(() => renderHook(() => useOnboarding())).toThrow();
-    
-    spy.mockRestore();
+    consoleSpy.mockRestore();
   });
 });

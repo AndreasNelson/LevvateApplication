@@ -16,9 +16,6 @@ export const Step2_Contract: React.FC<{ onNext: () => void }> = ({ onNext }) => 
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.agreedToTerms) {
-      return;
-    }
     const success = await handleSubmit(formData);
     if (success) onNext();
   };
@@ -29,6 +26,9 @@ export const Step2_Contract: React.FC<{ onNext: () => void }> = ({ onNext }) => 
       <Text c="dimmed" mb="xl">Please review and accept our standard service terms.</Text>
 
       <Paper withBorder p="md" mb="xl" bg="gray.0">
+        <Alert variant="light" color="blue" title="Demo Disclaimer" mb="md">
+          This agreement is <b>non-binding</b> and generated for technical demonstration purposes only.
+        </Alert>
         <ScrollArea h={200} offsetScrollbars>
           <Title order={4} mb="sm">Agreement Terms</Title>
           <Text size="sm" mb="md">

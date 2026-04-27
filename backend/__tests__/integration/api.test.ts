@@ -41,6 +41,21 @@ describe('API Routes', () => {
     expect(res.body.client.uuid).toBe(uuid);
   });
 
+  it('GET /api/clients/:uuid - should include stepData in response', async () => {
+    const createRes = await request(app)
+      .post('/api/clients')
+      .send({ email: 'stepdata@example.com' });
+    
+    const uuid = createRes.body.uuid;
+    await request(app)
+      .post(`/api/clients/${uuid}/step/1`)
+      .send({ formData: { field: 'value' } });
+
+    const res = await request(app).get(`/api/clients/${uuid}`);
+    expect(res.status).toBe(200);
+    expect(res.body.stepData[1]).toEqual({ field: 'value' });
+  });
+
   it('GET /api/clients/:uuid - should return 404 for non-existent client', async () => {
     const res = await request(app).get('/api/clients/nonexistent');
     expect(res.status).toBe(404);
@@ -58,6 +73,27 @@ describe('API Routes', () => {
     
     expect(res.status).toBe(200);
     expect(res.body.progress.stepsCompleted).toContain(1);
+  });
+
+  it('POST /api/clients/:uuid/step/:step - should require formData', async () => {
+    const createRes = await request(app)
+      .post('/api/clients')
+      .send({ email: 'noform@example.com' });
+    
+    const uuid = createRes.body.uuid;
+    const res = await request(app)
+      .post(`/api/clients/${uuid}/step/1`)
+      .send({});
+    
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Form data is required');
+  });
+
+  it('POST /api/clients/:uuid/step/:step - should return 404 for non-existent client', async () => {
+    const res = await request(app)
+      .post('/api/clients/nonexistent/step/1')
+      .send({ formData: {} });
+    expect(res.status).toBe(404);
   });
 
   it('POST /api/clients/:uuid/step/:step - should validate step number', async () => {
@@ -102,5 +138,60 @@ describe('API Routes', () => {
     
     expect(res.status).toBe(200);
     expect(res.body.currentStep).toBe(1);
+  });
+
+  it('GET /api/clients/:uuid/progress - should return 404 for non-existent client', async () => {
+    const res = await request(app).get('/api/clients/nonexistent/progress');
+    expect(res.status).toBe(404);
+  });
+
+  it('should return 404 for non-existent route', async () => {
+    const res = await request(app).get('/api/invalid-route');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Route not found');
+  });
+
+  it('POST /api/clients - should return 500 if model throws error', async () => {
+    const { ClientModel } = require('../../src/models/Client');
+    jest.spyOn(ClientModel, 'create').mockRejectedValueOnce(new Error('DB Error'));
+    
+    const res = await request(app)
+      .post('/api/clients')
+      .send({ email: 'error@example.com' });
+    
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('DB Error');
+  });
+
+  it('GET /api/clients/:uuid - should return 500 if model throws error', async () => {
+    const { ClientModel } = require('../../src/models/Client');
+    jest.spyOn(ClientModel, 'getByUuid').mockRejectedValueOnce(new Error('DB Error'));
+    
+    const res = await request(app).get('/api/clients/some-uuid');
+    
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('DB Error');
+  });
+
+  it('POST /api/clients/:uuid/step/:step - should return 500 if model throws error', async () => {
+    const { ClientModel } = require('../../src/models/Client');
+    jest.spyOn(ClientModel, 'getByUuid').mockRejectedValueOnce(new Error('DB Error'));
+    
+    const res = await request(app)
+      .post('/api/clients/some-uuid/step/1')
+      .send({ formData: {} });
+    
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('DB Error');
+  });
+
+  it('GET /api/clients/:uuid/progress - should return 500 if model throws error', async () => {
+    const { ClientModel } = require('../../src/models/Client');
+    jest.spyOn(ClientModel, 'getByUuid').mockRejectedValueOnce(new Error('DB Error'));
+    
+    const res = await request(app).get('/api/clients/some-uuid/progress');
+    
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('DB Error');
   });
 });

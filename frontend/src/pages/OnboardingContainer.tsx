@@ -8,8 +8,8 @@ import { Step2_Contract } from '../components/Step2_Contract.js';
 import { Step3_Payment } from '../components/Step3_Payment.js';
 import { Step4_Scheduling } from '../components/Step4_Scheduling.js';
 import { Step5_Confirmation } from '../components/Step5_Confirmation.js';
-import apiClient from '../services/apiClient.js';
-import { Loader, Center, Box, Title, Text, Button } from '@mantine/core';
+import { apiClient } from '../services/apiClient.js';
+import { Loader, Center, Box, Title, Text, Button, Alert } from '@mantine/core';
 
 export const OnboardingContainer: React.FC = () => {
   const { uuid } = useParams<{ uuid?: string }>();
@@ -108,7 +108,7 @@ export const OnboardingContainer: React.FC = () => {
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
         >
-          {isComplete || currentStep > 5 ? (
+          {currentStep === 5 || isComplete ? (
             <Step5_Confirmation />
           ) : (
             <>

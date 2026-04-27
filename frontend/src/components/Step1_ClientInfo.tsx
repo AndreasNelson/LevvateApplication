@@ -19,9 +19,6 @@ export const Step1_ClientInfo: React.FC<{ onNext: () => void }> = ({ onNext }) =
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      return;
-    }
     const success = await handleSubmit(formData);
     if (success) onNext();
   };
