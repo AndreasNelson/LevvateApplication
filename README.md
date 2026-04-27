@@ -4,18 +4,22 @@ A professional, production-ready multi-step client onboarding technical demonstr
 
 ## Overview
 
-This application demonstrates a seamless onboarding flow for new clients, featuring a polished UI, persistent state management, and an asynchronous backend capable of cloud scale. It follows industry best practices for security, testing, and developer experience.
+This application demonstrates a seamless onboarding flow for new clients, featuring a polished UI, persistent state management, and an asynchronous backend capable of cloud scale. It follows industry best practices for security, testing, and high-performance user experience.
 
 ## Key Features
 
 - ✅ **Professional UI/UX**: Built with **Mantine v7** and **Framer Motion** for a snappy, responsive, and animated user experience.
+- ✅ **Optimized Async Flow**:
+  - **Background Syncing**: Database synchronization happens silently in the background, ensuring zero interruptions to the user journey.
+  - **Soft Route Transitions**: Custom session generation logic allows for "instant" UUID creation without full-page reloads.
+  - **Intelligent Feedback**: Proactive "Waking up server" states manage user expectations during free-tier cloud hosting cold starts.
 - ✅ **Interactive Progress Tracking**: A real-time **Stepper** allows users to visualize their progress and jump back to previous steps to update information.
 - ✅ **Resume Anywhere**: Unique UUID-based tracking URLs allow clients to leave and resume their onboarding at any time.
 - ✅ **Production-Ready Backend**: Fully asynchronous architecture using **Node.js/Express** and **LibSQL (Turso/SQLite)**.
 - ✅ **Enterprise Security**:
   - **Data Masking**: Sensitive card numbers are automatically redacted before database storage.
   - **Security Headers**: Hardened with **Helmet.js** to prevent common web vulnerabilities.
-  - **CORS Management**: Restricted origins for production environments.
+  - **CORS Management**: Strict origin restrictions for production environments (Vercel & Render).
 - ✅ **High-Quality Codebase**:
   - **100% Line Coverage** on both frontend and backend.
   - Comprehensive unit and integration test suites using **Jest**.
@@ -27,7 +31,7 @@ This application demonstrates a seamless onboarding flow for new clients, featur
 - **React 18 + TypeScript**
 - **Mantine v7** (Component Library)
 - **Framer Motion** (Animations)
-- **React Router 6** (Navigation with v7 Future Flags enabled)
+- **React Router 6** (Navigation with v7 Future Flags)
 - **Axios** (API Communication)
 
 **Backend:**
@@ -127,7 +131,10 @@ npm run test:coverage
 This repository is optimized for deployment on **Render**, **Railway**, or **Vercel**.
 
 ### Render (Blueprint)
-The included `render.yaml` allows for "one-click" deployment of both the frontend and backend services.
+The included `render.yaml` allows for "one-click" deployment of both the backend and frontend services.
+
+### Vercel (Frontend)
+The included `vercel.json` ensures that deep links and page refreshes work correctly with React Router.
 
 ### Database (Turso)
 To use a persistent cloud database:
