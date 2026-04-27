@@ -4,18 +4,18 @@ import { NotificationService } from '../../src/services/NotificationService';
 import { ClientModel } from '../../src/models/Client';
 import db, { initializeDatabase } from '../../src/config/database';
 
-beforeAll(() => {
-  initializeDatabase();
+beforeAll(async () => {
+  await initializeDatabase();
 });
 
-beforeEach(() => {
-  db.exec('DELETE FROM clients');
-  db.exec('DELETE FROM notifications');
+beforeEach(async () => {
+  await db.execute('DELETE FROM clients');
+  await db.execute('DELETE FROM notifications');
 });
 
 describe('HubSpotService', () => {
   it('should sync client to HubSpot', async () => {
-    const client = ClientModel.create('test@example.com', 'TestCo', 'John');
+    const client = await ClientModel.create('test@example.com', 'TestCo', 'John');
     const result = await HubSpotService.syncClientToHubSpot(client);
     
     expect(result.success).toBe(true);
@@ -44,11 +44,14 @@ describe('StripeService', () => {
 
 describe('NotificationService', () => {
   it('should notify team', async () => {
-    const client = ClientModel.create('test@example.com');
+    const client = await ClientModel.create('test@example.com');
     await NotificationService.notifyTeam('test_event', client.id, {});
     
-    const stmt = db.prepare('SELECT * FROM notifications WHERE clientId = ?');
-    const notification = stmt.get(client.id);
+    const result = await db.execute({
+      sql: 'SELECT * FROM notifications WHERE clientId = ?',
+      args: [client.id]
+    });
+    const notification = result.rows[0];
     expect(notification).toBeDefined();
   });
 

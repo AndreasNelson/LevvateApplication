@@ -6,16 +6,16 @@ import NotificationService from './NotificationService.js';
 
 export class CompletionService {
   static async handleCompletion(clientId: number): Promise<void> {
-    const progress = OnboardingProgressModel.getByClientId(clientId);
+    const progress = await OnboardingProgressModel.getByClientId(clientId);
     
     if (!progress || progress.stepsCompleted.length !== 5) {
       throw new Error('Onboarding not complete');
     }
 
-    const client = ClientModel.getById(clientId);
+    const client = await ClientModel.getById(clientId);
     if (!client) throw new Error('Client not found');
 
-    const stepData = StepDataModel.getByClient(clientId);
+    const stepData = await StepDataModel.getByClient(clientId);
 
     // 1. Sync to HubSpot
     const hubspotResult = await HubSpotService.syncClientToHubSpot(client);

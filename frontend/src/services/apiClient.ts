@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { ClientData, OnboardingProgress, StepFormData } from '../types/index.js';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const client: AxiosInstance = axios.create({
   baseURL: API_URL,

@@ -2,11 +2,11 @@ import request from 'supertest';
 import db from '../../src/config/database';
 import app from '../../src/index';
 
-beforeEach(() => {
-  db.exec('DELETE FROM clients');
-  db.exec('DELETE FROM onboarding_progress');
-  db.exec('DELETE FROM step_data');
-  db.exec('DELETE FROM notifications');
+beforeEach(async () => {
+  await db.execute('DELETE FROM clients');
+  await db.execute('DELETE FROM onboarding_progress');
+  await db.execute('DELETE FROM step_data');
+  await db.execute('DELETE FROM notifications');
 });
 
 describe('API Routes', () => {

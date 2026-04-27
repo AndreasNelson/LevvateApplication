@@ -44,8 +44,17 @@ export const OnboardingContainer: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white p-8 rounded-lg shadow text-center">
-        <p>Loading onboarding...</p>
+      <div className="bg-white p-12 rounded-lg shadow-lg text-center max-w-md mx-auto">
+        <div className="flex justify-center mb-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+        <h2 className="text-xl font-semibold mb-2">Preparing your onboarding...</h2>
+        <p className="text-gray-600">Our demo server may take a few seconds to wake up. Thank you for your patience!</p>
+        <div className="mt-8 space-y-4">
+          <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
+          <div className="h-4 bg-gray-100 rounded animate-pulse w-5/6 mx-auto"></div>
+          <div className="h-4 bg-gray-100 rounded animate-pulse w-4/6 mx-auto"></div>
+        </div>
       </div>
     );
   }

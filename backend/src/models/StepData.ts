@@ -9,23 +9,27 @@ export interface IStepData {
 }
 
 export class StepDataModel {
-  static save(clientId: number, step: number, formData: Record<string, any>): IStepData {
+  static async save(clientId: number, step: number, formData: Record<string, any>): Promise<IStepData> {
     const now = Date.now();
-    const stmt = db.prepare(`
-      INSERT INTO step_data (clientId, step, formData, submittedAt)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(clientId, step) DO UPDATE SET
-        formData = excluded.formData,
-        submittedAt = excluded.submittedAt
-    `);
-
-    stmt.run(clientId, step, JSON.stringify(formData), now);
-    return this.getByClientAndStep(clientId, step)!;
+    await db.execute({
+      sql: `INSERT INTO step_data (clientId, step, formData, submittedAt)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(clientId, step) DO UPDATE SET
+              formData = excluded.formData,
+              submittedAt = excluded.submittedAt`,
+      args: [clientId, step, JSON.stringify(formData), now]
+    });
+    
+    const saved = await this.getByClientAndStep(clientId, step);
+    return saved!;
   }
 
-  static getByClientAndStep(clientId: number, step: number): IStepData | null {
-    const stmt = db.prepare('SELECT * FROM step_data WHERE clientId = ? AND step = ?');
-    const row = stmt.get(clientId, step) as any;
+  static async getByClientAndStep(clientId: number, step: number): Promise<IStepData | null> {
+    const result = await db.execute({
+      sql: 'SELECT * FROM step_data WHERE clientId = ? AND step = ?',
+      args: [clientId, step]
+    });
+    const row = result.rows[0] as any;
     if (!row) return null;
     
     return {
@@ -34,9 +38,12 @@ export class StepDataModel {
     };
   }
 
-  static getByClient(clientId: number): IStepData[] {
-    const stmt = db.prepare('SELECT * FROM step_data WHERE clientId = ? ORDER BY step ASC');
-    const rows = stmt.all(clientId) as any[];
+  static async getByClient(clientId: number): Promise<IStepData[]> {
+    const result = await db.execute({
+      sql: 'SELECT * FROM step_data WHERE clientId = ? ORDER BY step ASC',
+      args: [clientId]
+    });
+    const rows = result.rows as any[];
     
     return rows.map(row => ({
       ...row,

@@ -20,7 +20,7 @@ const validateStepData = (req: Request, res: Response, next: NextFunction): void
 };
 
 // POST /api/clients - Create new client
-router.post('/clients', (req: Request, res: Response): void => {
+router.post('/clients', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, company, name, phone } = req.body;
 
@@ -29,8 +29,8 @@ router.post('/clients', (req: Request, res: Response): void => {
       return;
     }
 
-    const client = ClientModel.create(email, company, name, phone);
-    const progress = OnboardingProgressModel.create(client.id);
+    const client = await ClientModel.create(email, company, name, phone);
+    const progress = await OnboardingProgressModel.create(client.id);
 
     res.status(201).json({
       uuid: client.uuid,
@@ -45,18 +45,18 @@ router.post('/clients', (req: Request, res: Response): void => {
 });
 
 // GET /api/clients/:uuid - Get client and progress
-router.get('/clients/:uuid', (req: Request, res: Response): void => {
+router.get('/clients/:uuid', async (req: Request, res: Response): Promise<void> => {
   try {
     const { uuid } = req.params;
-    const client = ClientModel.getByUuid(uuid);
+    const client = await ClientModel.getByUuid(uuid);
 
     if (!client) {
       res.status(404).json({ error: 'Client not found' });
       return;
     }
 
-    const progress = OnboardingProgressModel.getByClientId(client.id);
-    const stepData = StepDataModel.getByClient(client.id);
+    const progress = await OnboardingProgressModel.getByClientId(client.id);
+    const stepData = await StepDataModel.getByClient(client.id);
 
     res.json({
       client: {
@@ -93,17 +93,17 @@ router.post('/clients/:uuid/step/:step', validateStepData, async (req: Request, 
       return;
     }
 
-    const client = ClientModel.getByUuid(uuid);
+    const client = await ClientModel.getByUuid(uuid);
     if (!client) {
       res.status(404).json({ error: 'Client not found' });
       return;
     }
 
     // Save step data
-    StepDataModel.save(client.id, stepNum, formData);
+    await StepDataModel.save(client.id, stepNum, formData);
 
     // Update progress
-    const progress = OnboardingProgressModel.updateStep(client.id, stepNum);
+    const progress = await OnboardingProgressModel.updateStep(client.id, stepNum);
 
     // Check if onboarding is complete
     if (progress.stepsCompleted.length === 5) {
@@ -123,17 +123,17 @@ router.post('/clients/:uuid/step/:step', validateStepData, async (req: Request, 
 });
 
 // GET /api/clients/:uuid/progress - Get progress only
-router.get('/clients/:uuid/progress', (req: Request, res: Response): void => {
+router.get('/clients/:uuid/progress', async (req: Request, res: Response): Promise<void> => {
   try {
     const { uuid } = req.params;
-    const client = ClientModel.getByUuid(uuid);
+    const client = await ClientModel.getByUuid(uuid);
 
     if (!client) {
       res.status(404).json({ error: 'Client not found' });
       return;
     }
 
-    const progress = OnboardingProgressModel.getByClientId(client.id);
+    const progress = await OnboardingProgressModel.getByClientId(client.id);
 
     res.json({
       currentStep: progress?.currentStep || 1,

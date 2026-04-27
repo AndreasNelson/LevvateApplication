@@ -10,20 +10,24 @@ export interface IOnboardingProgress {
 }
 
 export class OnboardingProgressModel {
-  static create(clientId: number): IOnboardingProgress {
+  static async create(clientId: number): Promise<IOnboardingProgress> {
     const now = Date.now();
-    const stmt = db.prepare(`
-      INSERT INTO onboarding_progress (clientId, currentStep, stepsCompleted, lastUpdated)
-      VALUES (?, ?, ?, ?)
-    `);
+    await db.execute({
+      sql: `INSERT INTO onboarding_progress (clientId, currentStep, stepsCompleted, lastUpdated)
+            VALUES (?, ?, ?, ?)`,
+      args: [clientId, 1, JSON.stringify([]), now]
+    });
     
-    stmt.run(clientId, 1, JSON.stringify([]), now);
-    return this.getByClientId(clientId)!;
+    const progress = await this.getByClientId(clientId);
+    return progress!;
   }
 
-  static getByClientId(clientId: number): IOnboardingProgress | null {
-    const stmt = db.prepare('SELECT * FROM onboarding_progress WHERE clientId = ?');
-    const row = stmt.get(clientId) as any;
+  static async getByClientId(clientId: number): Promise<IOnboardingProgress | null> {
+    const result = await db.execute({
+      sql: 'SELECT * FROM onboarding_progress WHERE clientId = ?',
+      args: [clientId]
+    });
+    const row = result.rows[0] as any;
     if (!row) return null;
     
     return {
@@ -32,8 +36,8 @@ export class OnboardingProgressModel {
     };
   }
 
-  static updateStep(clientId: number, stepNumber: number): IOnboardingProgress {
-    const progress = this.getByClientId(clientId);
+  static async updateStep(clientId: number, stepNumber: number): Promise<IOnboardingProgress> {
+    const progress = await this.getByClientId(clientId);
     if (!progress) throw new Error('Progress not found');
 
     const stepsCompleted = [...new Set([...progress.stepsCompleted, stepNumber])];
@@ -41,18 +45,19 @@ export class OnboardingProgressModel {
     const completedAt = stepsCompleted.length === 5 ? Date.now() : null;
     const now = Date.now();
 
-    const stmt = db.prepare(`
-      UPDATE onboarding_progress 
-      SET currentStep = ?, stepsCompleted = ?, completedAt = ?, lastUpdated = ?
-      WHERE clientId = ?
-    `);
+    await db.execute({
+      sql: `UPDATE onboarding_progress 
+            SET currentStep = ?, stepsCompleted = ?, completedAt = ?, lastUpdated = ?
+            WHERE clientId = ?`,
+      args: [currentStep, JSON.stringify(stepsCompleted), completedAt, now, clientId]
+    });
 
-    stmt.run(currentStep, JSON.stringify(stepsCompleted), completedAt, now, clientId);
-    return this.getByClientId(clientId)!;
+    const updated = await this.getByClientId(clientId);
+    return updated!;
   }
 
-  static isComplete(clientId: number): boolean {
-    const progress = this.getByClientId(clientId);
+  static async isComplete(clientId: number): Promise<boolean> {
+    const progress = await this.getByClientId(clientId);
     if (!progress) return false;
     return progress.stepsCompleted.length === 5;
   }

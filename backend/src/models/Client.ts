@@ -14,31 +14,38 @@ export interface IClient {
 }
 
 export class ClientModel {
-  static create(email: string, company?: string, name?: string, phone?: string): IClient {
+  static async create(email: string, company?: string, name?: string, phone?: string): Promise<IClient> {
     const uuid = uuidv4();
     const now = Date.now();
     
-    const stmt = db.prepare(`
-      INSERT INTO clients (uuid, email, company, name, phone, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
+    await db.execute({
+      sql: `INSERT INTO clients (uuid, email, company, name, phone, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [uuid, email, company || null, name || null, phone || null, now, now]
+    });
     
-    stmt.run(uuid, email, company || null, name || null, phone || null, now, now);
-    return this.getByUuid(uuid)!;
+    const client = await this.getByUuid(uuid);
+    return client!;
   }
 
-  static getByUuid(uuid: string): IClient | null {
-    const stmt = db.prepare('SELECT * FROM clients WHERE uuid = ?');
-    return stmt.get(uuid) as IClient || null;
+  static async getByUuid(uuid: string): Promise<IClient | null> {
+    const result = await db.execute({
+      sql: 'SELECT * FROM clients WHERE uuid = ?',
+      args: [uuid]
+    });
+    return (result.rows[0] as unknown as IClient) || null;
   }
 
-  static getById(id: number): IClient | null {
-    const stmt = db.prepare('SELECT * FROM clients WHERE id = ?');
-    return stmt.get(id) as IClient || null;
+  static async getById(id: number): Promise<IClient | null> {
+    const result = await db.execute({
+      sql: 'SELECT * FROM clients WHERE id = ?',
+      args: [id]
+    });
+    return (result.rows[0] as unknown as IClient) || null;
   }
 
-  static update(uuid: string, data: Partial<Omit<IClient, 'id' | 'uuid' | 'createdAt'>>): IClient {
-    const client = this.getByUuid(uuid);
+  static async update(uuid: string, data: Partial<Omit<IClient, 'id' | 'uuid' | 'createdAt'>>): Promise<IClient> {
+    const client = await this.getByUuid(uuid);
     if (!client) throw new Error('Client not found');
 
     const updates = { ...data, updatedAt: Date.now() };
@@ -46,10 +53,13 @@ export class ClientModel {
     const values = Object.values(updates);
     const placeholders = keys.map(k => `${k} = ?`).join(', ');
 
-    const stmt = db.prepare(`UPDATE clients SET ${placeholders} WHERE uuid = ?`);
-    stmt.run(...values, uuid);
+    await db.execute({
+      sql: `UPDATE clients SET ${placeholders} WHERE uuid = ?`,
+      args: [...values, uuid]
+    });
 
-    return this.getByUuid(uuid)!;
+    const updated = await this.getByUuid(uuid);
+    return updated!;
   }
 }
 
